@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { Header } from '../components/Header';
-import { Task, TasksList } from '../components/TasksList';
+import { TasksList } from '../components/TasksList';
+import { Task } from '../components/TaskItem';
 import { TodoInput } from '../components/TodoInput';
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
+  function handleEditTask(taskId: number, taskNewTitle: string) {
+    setTasks(prevState => prevState.map(task => {
+      if (task.id === taskId) {
+        task.title = taskNewTitle
+      }
+      return task;
+    }));
+  }
+
   function handleAddTask(newTaskTitle: string) {
-    //TODO - add new task
+    const taskExist = tasks.find(task => task.title === newTaskTitle);
+    if (taskExist) {
+      Alert.alert('Task já cadastrada', 'Você não pode cadastrar uma task com o mesmo nome');
+      return;
+    }
     const task = {
       id: new Date().getTime(),
       title: newTaskTitle,
@@ -19,8 +33,6 @@ export function Home() {
   }
 
   function handleToggleTaskDone(id: number) {
-    //TODO - toggle task done if exists
-
     setTasks(prevState => prevState.map(task => {
       if (task.id === id) {
         task.done = !task.done
@@ -30,8 +42,15 @@ export function Home() {
   }
 
   function handleRemoveTask(id: number) {
-    //TODO - remove task from state
-    setTasks(prevState => prevState.filter(task => task.id !== id));
+    Alert.alert('Remover item', 'Tem certeza que você deseja remover esse item?', [
+      {
+        text: 'Não',
+      },
+      {
+        text: 'Sim',
+        onPress: () => setTasks(prevState => prevState.filter(task => task.id !== id)),
+      }
+    ], { cancelable: true })
   }
 
   return (
@@ -44,6 +63,7 @@ export function Home() {
         tasks={tasks}
         toggleTaskDone={handleToggleTaskDone}
         removeTask={handleRemoveTask}
+        editTask={handleEditTask}
       />
     </View>
   )
